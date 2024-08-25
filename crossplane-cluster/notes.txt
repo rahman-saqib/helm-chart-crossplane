@@ -1,0 +1,28 @@
+kubectl create namespace crossplane-system
+helm repo add crossplane-stable https://charts.crossplane.io/stable
+helm repo update
+helm install crossplane --namespace crossplane-system crossplane-stable/crossplane
+helm list -n crossplane-system
+
+Create Service Account with the neccassary roles to create the desired resources
+Download the json file
+
+cat > authentication.yaml <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gcp-account-creds
+  namespace: crossplane-system
+type: Opaque
+data:
+  credentials: $(base64 crossplane-credentials.json | tr -d "\\n")
+EOF
+
+k apply -f authentication.yaml
+
+k apply -f provider-gcp.yaml
+
+k get providers 
+Make sure installed and health state are healthy
+
+k apply -f provider-config-gcp.yaml
